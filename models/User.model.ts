@@ -1,16 +1,8 @@
-import { DataTypes, Sequelize } from "sequelize";
-// import User from "./models/User";
+import { DataTypes } from "sequelize";
+import sequelize from "../db";
 import { UUIDV4 } from "sequelize";
 
-const sequelize = new Sequelize({
-	host: "db.tvhwesawjyluqpcukdmy.supabase.co",
-	database: "postgres",
-	username: "postgres",
-	password: "J_?YN#fX8T52$bK",
-	dialect: "postgres"
-});
-
-sequelize.define("User", {
+const User = sequelize.define("User", {
 	id: {
 		type: DataTypes.UUID,
 		defaultValue: UUIDV4,
@@ -34,4 +26,7 @@ sequelize.define("User", {
 	}
 });
 
-export default sequelize;
+console.log("User model", User === sequelize.models.User); // true
+console.log("User model", sequelize.define); // true
+
+export default User;
