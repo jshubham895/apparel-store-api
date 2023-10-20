@@ -1,36 +1,22 @@
-import express from "express";
+import express, { ErrorRequestHandler, Express } from "express";
 import bodyParser from "body-parser";
-import { closeDatabaseConnection, syncDatabase } from "./dbService";
-const app = express();
+const app: Express = express();
+import appRoutes from "./app/routes/approutes";
+import { ValidationError } from "express-validation";
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(bodyParser.json());
 
-(async () => await syncDatabase())();
+app.use("/api", appRoutes);
 
-app.listen(3000, () => {
-	console.log("Server started successfully.");
-});
+app.listen(3000, () => console.log("Server running on port 3000"));
 
-const exitHandler = async (
-	options: { cleanup?: boolean; exit?: boolean },
-	exitCode: null | number
-) => {
-	await closeDatabaseConnection();
-	if (options.cleanup) console.log("clean");
-	if (exitCode || exitCode === 0) console.log(exitCode);
-	if (options.exit) process.exit();
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+	if (err instanceof ValidationError) {
+		return res.status(err.statusCode).json(err);
+	}
+	return res.status(500).json(err);
 };
 
-//do something when app is closing
-process.on("exit", exitHandler.bind(null, { cleanup: true }));
-
-//catches ctrl+c event
-process.on("SIGINT", exitHandler.bind(null, { exit: true }));
-
-// catches "kill pid" (for example: nodemon restart)
-process.on("SIGUSR1", exitHandler.bind(null, { exit: true }));
-process.on("SIGUSR2", exitHandler.bind(null, { exit: true }));
-
-//catches uncaught exceptions
-process.on("uncaughtException", exitHandler.bind(null, { exit: true }));
+app.use(errorHandler);

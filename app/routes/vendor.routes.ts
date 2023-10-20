@@ -10,4 +10,4 @@ router
 	.route("/update")
 	.post(validate(vendorValidation.update), addOrUpdateStock);
 
-export default router;
+module.exports = router;
